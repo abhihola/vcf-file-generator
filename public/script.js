@@ -1,5 +1,5 @@
-document.getElementById('contactForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+document.getElementById('contactForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
 
     const name = document.getElementById('name').value;
     const phone = document.getElementById('phone').value;
@@ -7,18 +7,10 @@ document.getElementById('contactForm').addEventListener('submit', async function
 
     const response = await fetch('/submit', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, phone, email }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email })
     });
 
     const result = await response.json();
-
-    if (response.ok) {
-        alert('Contact saved successfully!');
-        document.getElementById('contactForm').reset();
-    } else {
-        alert('Error: ' + result.error);
-    }
+    alert(result.message);
 });
