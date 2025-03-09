@@ -3,40 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCF File Generator</title>
+    <title>VCF Generator</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Enter Contact Details</h2>
+    <h1>Submit Your Contact</h1>
     <form id="contactForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" required>
-        
-        <label for="whatsapp">WhatsApp Number:</label>
-        <input type="text" id="whatsapp" required>
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" required>
-        
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="text" id="phone" placeholder="WhatsApp Number" required>
+        <input type="email" id="email" placeholder="Email Address" required>
         <button type="submit">Submit</button>
     </form>
-
-    <script>
-        document.getElementById("contactForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById("name").value;
-            const whatsapp = document.getElementById("whatsapp").value;
-            const email = document.getElementById("email").value;
-
-            const response = await fetch("https://vcf-file-generator.onrender.com//submit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, whatsapp, email })
-            });
-
-            const data = await response.json();
-            alert(data.message);
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
