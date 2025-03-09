@@ -1,24 +1,25 @@
 const fs = require('fs');
 const path = require('path');
-const mongoose = require('mongoose');
 const Contact = require('./models/contact');
 
-const generateVCF = async () => {
-    const contacts = await Contact.find({});
-    if (contacts.length === 0) return null;
+async function generateVCF() {
+    try {
+        const contacts = await Contact.find();
+        let vcfData = '';
 
-    const vcfData = contacts.map(contact => `
-BEGIN:VCARD
-VERSION:3.0
-FN:${contact.name}
-TEL;TYPE=cell:${contact.phone}
-EMAIL:${contact.email}
-END:VCARD
-    `).join('\n');
+        contacts.forEach(contact => {
+            vcfData += `BEGIN:VCARD\nVERSION:3.0\nFN:${contact.name}\nTEL;TYPE=cell:${contact.phone}\nEMAIL:${contact.email}\nEND:VCARD\n\n`;
+        });
 
-    const vcfPath = path.join(__dirname, 'contacts.vcf');
-    fs.writeFileSync(vcfPath, vcfData);
-    return vcfPath;
-};
+        const filePath = path.join(__dirname, 'public', 'contacts.vcf');
+        fs.writeFileSync(filePath, vcfData);
+        console.log('VCF file generated successfully:', filePath);
+
+        return filePath;
+    } catch (error) {
+        console.error('Error generating VCF:', error);
+        throw error;
+    }
+}
 
 module.exports = { generateVCF };
