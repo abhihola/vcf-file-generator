@@ -1,17 +1,28 @@
 {
-  "name": "vcf-generator",
+  "name": "VCF_Generator",
   "version": "1.0.0",
+  "description": "A web service that collects contacts and generates VCF files every 3 days.",
   "main": "server.js",
+  "scripts": {
+    "start": "pm2 start server.js --name VCF_Generator --deep-monitoring --attach",
+    "stop": "pm2 stop VCF_Generator",
+    "restart": "pm2 restart VCF_Generator"
+  },
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "mongoose": "^7.0.0",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "nodemailer": "^6.9.1",
-    "node-cron": "^3.0.0"
+    "node-cron": "^3.0.0",
+    "pm2": "^5.2.0",
+    "fs-extra": "^10.0.0"
   },
-  "scripts": {
-    "start": "node server.js"
+  "keywords": ["VCF", "contacts", "generator", "Heroku"],
+  "engines": {
+    "node": "18.x"
   }
 }
