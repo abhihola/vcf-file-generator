@@ -2,13 +2,18 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, "public")));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
@@ -28,9 +33,9 @@ const contactSchema = new mongoose.Schema({
 
 const Contact = mongoose.model("Contact", contactSchema);
 
-// Root Route (To Test If API is Running)
+// Root Route - Serve index.html
 app.get("/", (req, res) => {
-  res.send("✅ VCF Generator API is running.");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Submit Contact Route
