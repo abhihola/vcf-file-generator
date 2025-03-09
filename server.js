@@ -1,8 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fs = require("fs");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require("path");
 require("dotenv").config();
 
 const app = express();
@@ -12,36 +11,29 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static("public"));
 
-// Store contacts in a JSON file
-const contactsFile = "contacts.json";
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log("MongoDB Connected"))
+  .catch(err => console.error("MongoDB Connection Error:", err));
 
-// Endpoint to save contacts
-app.post("/submit", (req, res) => {
+const Contact = require("./models/contact");
+
+// API to store user contact details
+app.post("/submit", async (req, res) => {
     const { name, phone, email } = req.body;
 
     if (!name || !phone || !email) {
         return res.status(400).json({ error: "All fields are required" });
     }
 
-    const newContact = { name, phone, email };
-
-    fs.readFile(contactsFile, (err, data) => {
-        let contacts = [];
-        if (!err) {
-            contacts = JSON.parse(data);
-        }
-        contacts.push(newContact);
-
-        fs.writeFile(contactsFile, JSON.stringify(contacts, null, 2), (err) => {
-            if (err) return res.status(500).json({ error: "Error saving contact" });
-            res.json({ message: "Contact saved successfully!" });
-        });
-    });
-});
-
-// Serve index.html
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+    try {
+        const newContact = new Contact({ name, phone, email });
+        await newContact.save();
+        res.json({ message: "Contact saved successfully!" });
+    } catch (error) {
+        res.status(500).json({ error: "Error saving contact" });
+    }
 });
 
 app.listen(PORT, () => {
