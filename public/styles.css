@@ -1,24 +1,23 @@
 body {
     font-family: Arial, sans-serif;
+    text-align: center;
     background: url('https://files.catbox.moe/mdeuf8.jpeg') no-repeat center center fixed;
     background-size: cover;
     color: white;
-    text-align: center;
 }
 
 .container {
     max-width: 400px;
     margin: auto;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.6);
     border-radius: 10px;
-    margin-top: 100px;
 }
 
 input, select, button {
     width: 100%;
     padding: 10px;
-    margin: 5px 0;
+    margin: 10px 0;
     border-radius: 5px;
     border: none;
 }
@@ -26,6 +25,7 @@ input, select, button {
 button {
     background: #28a745;
     color: white;
+    font-weight: bold;
     cursor: pointer;
 }
 
@@ -33,24 +33,6 @@ button:hover {
     background: #218838;
 }
 
-.note {
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-footer {
-    margin-top: 20px;
-    font-size: 14px;
-}
-
-footer p {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 10px;
-    display: inline-block;
-    border-radius: 5px;
-}
-
-footer p a {
-    color: yellow;
-    text-decoration: none;
+h1 {
+    font-size: 24px;
 }
