@@ -1,21 +1,24 @@
-document.getElementById('contactForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
+document.getElementById('contactForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
     const name = document.getElementById('name').value;
     const phone = document.getElementById('phone').value;
     const email = document.getElementById('email').value;
 
-    try {
-        const response = await fetch('/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, phone, email })
-        });
+    const response = await fetch('/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, phone, email }),
+    });
 
-        const data = await response.json();
-        alert(data.message);
+    const result = await response.json();
+
+    if (response.ok) {
+        alert('Contact saved successfully!');
         document.getElementById('contactForm').reset();
-    } catch (error) {
-        console.error('Error submitting contact:', error);
+    } else {
+        alert('Error: ' + result.error);
     }
 });
