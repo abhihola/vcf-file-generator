@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
+const cron = require("node-cron");
 
 dotenv.config();
 const app = express();
@@ -12,13 +13,13 @@ const PORT = process.env.PORT || 10000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public")); // Serve static frontend files
+app.use(express.static("public")); // Serve frontend files
 
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Contact Schema & Model
 const contactSchema = new mongoose.Schema({
@@ -29,7 +30,7 @@ const contactSchema = new mongoose.Schema({
 });
 const Contact = mongoose.model("Contact", contactSchema);
 
-// Serve frontend
+// Serve Frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -42,32 +43,44 @@ app.post("/submit", async (req, res) => {
 
     const newContact = new Contact({ name, phone, email });
     await newContact.save();
-    res.send("Contact saved successfully!");
+    res.send("✅ Contact saved successfully!");
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error saving contact:", error);
     res.status(500).send("Internal Server Error");
   }
 });
 
-// ✅ **TEST EMAIL FUNCTIONALITY** (Visit: `/send-test-email?email=your_email@example.com`)
-app.get("/send-test-email", async (req, res) => {
-  const testEmail = req.query.email;
-  if (!testEmail) return res.status(400).send("Please provide an email in the URL.");
-
-  const testFilePath = path.join(__dirname, "test.vcf");
-  fs.writeFileSync(testFilePath, `BEGIN:VCARD\nVERSION:3.0\nFN:Test User\nTEL;TYPE=cell:+123456789\nEMAIL:${testEmail}\nEND:VCARD\n`);
-
-  try {
-    await sendEmail(testEmail, testFilePath);
-    res.send(`Test email sent to ${testEmail}`);
-  } catch (error) {
-    console.error("Email Error:", error);
-    res.status(500).send("Failed to send email.");
-  }
+// Generate & Send VCF File (Runs Every 3 Days)
+cron.schedule("0 0 */3 * *", async () => {
+  console.log("📌 Running scheduled VCF generation & email task...");
+  await generateAndSendVCF();
 });
 
+// Function: Generate & Email VCF File
+async function generateAndSendVCF() {
+  try {
+    const contacts = await Contact.find();
+    if (contacts.length === 0) {
+      console.log("⚠ No contacts found, skipping email.");
+      return;
+    }
+
+    const vcfContent = contacts.map(contact => 
+      `BEGIN:VCARD\nVERSION:3.0\nFN:${contact.name}\nTEL;TYPE=cell:${contact.phone}\nEMAIL:${contact.email}\nEND:VCARD`
+    ).join("\n");
+
+    const vcfFilePath = path.join(__dirname, "contacts.vcf");
+    fs.writeFileSync(vcfFilePath, vcfContent);
+
+    const allEmails = contacts.map(c => c.email);
+    await sendEmail(allEmails, vcfFilePath);
+  } catch (error) {
+    console.error("❌ Error generating/sending VCF file:", error);
+  }
+}
+
 // Email Sending Function
-async function sendEmail(toEmail, filePath) {
+async function sendEmail(recipients, filePath) {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -78,17 +91,17 @@ async function sendEmail(toEmail, filePath) {
 
   let mailOptions = {
     from: process.env.EMAIL_USERNAME,
-    to: toEmail,
-    subject: "Test VCF Email",
-    text: "This is a test email with a sample VCF file.",
-    attachments: [{ filename: "test.vcf", path: filePath }],
+    to: recipients,
+    subject: "📁 Your Contact VCF File",
+    text: "Attached is the latest contact VCF file.",
+    attachments: [{ filename: "contacts.vcf", path: filePath }],
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`Test email sent to ${toEmail}`);
+  console.log(`📧 Email sent successfully to ${recipients.length} users`);
 }
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
