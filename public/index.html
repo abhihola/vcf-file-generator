@@ -7,14 +7,21 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Submit Your Contact</h1>
-    <form id="contactForm">
-        <input type="text" id="name" placeholder="Full Name" required>
-        <input type="email" id="email" placeholder="Email Address" required>
-        <select id="country"></select>
-        <input type="text" id="phone" placeholder="WhatsApp Number" required>
-        <button type="submit">Submit</button>
-    </form>
+    <div class="container">
+        <h1>Submit Your Contact</h1>
+        <form id="contactForm">
+            <input type="text" id="name" placeholder="Full Name" required>
+            <input type="text" id="search" placeholder="Search Country">
+            <select id="country">
+                <option value="+234" selected>Nigeria (+234)</option>
+            </select>
+            <input type="text" id="phone" placeholder="WhatsApp Number" required>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <button type="submit">Submit</button>
+        </form>
+        <p id="message"></p>
+    </div>
+    <footer>Powered by Septorch</footer>
     <script src="script.js"></script>
 </body>
 </html>
