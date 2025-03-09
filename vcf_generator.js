@@ -1,19 +1,9 @@
-const fs = require("fs");
-const path = require("path");
+const Contact = require("./models/contact");
 
-const contactsFile = "contacts.json";
-const uploadsDir = "uploads/";
-
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-}
-
-function generateVCF() {
-    fs.readFile(contactsFile, (err, data) => {
-        if (err) return console.error("Error reading contacts:", err);
-
-        const contacts = JSON.parse(data);
-        if (contacts.length === 0) return console.log("No contacts to process.");
+async function generateVCF() {
+    try {
+        const contacts = await Contact.find({});
+        if (contacts.length === 0) return null;
 
         const vcfContent = contacts.map(contact => `
 BEGIN:VCARD
@@ -24,12 +14,11 @@ EMAIL:${contact.email}
 END:VCARD
         `).join("\n");
 
-        const filePath = path.join(uploadsDir, `contacts_${Date.now()}.vcf`);
-        fs.writeFileSync(filePath, vcfContent);
-        console.log(`VCF file generated: ${filePath}`);
-
-        return filePath;
-    });
+        return vcfContent;
+    } catch (err) {
+        console.error("Error generating VCF:", err);
+        return null;
+    }
 }
 
 module.exports = generateVCF;
