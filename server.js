@@ -5,7 +5,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const nodeCron = require('node-cron');
 const vcfGenerator = require('./vcf_generator');
-const nodemailer = require('nodemailer');
 
 dotenv.config();
 const app = express();
@@ -36,40 +35,9 @@ app.post('/submit', async (req, res) => {
     }
 });
 
-// Serve the submission form (default homepage)
+// Serve the Home Page
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
-});
-
-// Serve the test email site at /home
-app.get('/home', (req, res) => {
-    res.sendFile(__dirname + '/public/test.html');
-});
-
-// Nodemailer setup
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
-
-// Test Email Route
-app.get('/test-email', async (req, res) => {
-    try {
-        const testRecipient = 'your-test-email@example.com'; // Change to your email
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: testRecipient,
-            subject: 'Test VCF',
-            text: 'This is a test email.'
-        });
-        res.send('Test email sent successfully!');
-    } catch (error) {
-        console.error('Error sending test email:', error);
-        res.status(500).send('Failed to send test email.');
-    }
 });
 
 // Schedule VCF generation every 3 days
