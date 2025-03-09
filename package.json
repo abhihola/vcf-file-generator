@@ -1,22 +1,19 @@
 {
   "name": "vcf-file-generator",
   "version": "1.0.0",
-  "description": "A Node.js app that collects contacts, generates VCF files, and emails them every 3 days.",
-  "main": "server.js",
+  "description": "A web application to generate VCF files",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npm install"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^6.9.1",
-    "nodemailer": "^6.9.2",
-    "node-cron": "^3.0.0",
-    "vcards-js": "^2.9.0",
-    "dotenv": "^16.3.1"
+    "start": "node index.js"
   },
   "engines": {
     "node": "18.x",
     "npm": "9.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.6.3",
+    "nodemailer": "^6.9.7",
+    "vcf": "^2.2.0"
   }
 }
