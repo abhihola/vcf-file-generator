@@ -29,7 +29,7 @@ const contactSchema = new mongoose.Schema({
 });
 const Contact = mongoose.model("Contact", contactSchema);
 
-// Serve frontend (fix "Cannot GET /" issue)
+// Serve frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -49,32 +49,25 @@ app.post("/submit", async (req, res) => {
   }
 });
 
-// Generate & Send VCF File Every 3 Days
-setInterval(async () => {
+// ✅ **TEST EMAIL FUNCTIONALITY** (Visit: `/send-test-email?email=your_email@example.com`)
+app.get("/send-test-email", async (req, res) => {
+  const testEmail = req.query.email;
+  if (!testEmail) return res.status(400).send("Please provide an email in the URL.");
+
+  const testFilePath = path.join(__dirname, "test.vcf");
+  fs.writeFileSync(testFilePath, `BEGIN:VCARD\nVERSION:3.0\nFN:Test User\nTEL;TYPE=cell:+123456789\nEMAIL:${testEmail}\nEND:VCARD\n`);
+
   try {
-    const contacts = await Contact.find();
-    if (contacts.length === 0) return;
-
-    let vcfContent = "";
-    contacts.forEach((contact) => {
-      vcfContent += `BEGIN:VCARD\nVERSION:3.0\nFN:${contact.name}\nTEL;TYPE=cell:${contact.phone}\nEMAIL:${contact.email}\nEND:VCARD\n`;
-    });
-
-    const filePath = path.join(__dirname, "contacts.vcf");
-    fs.writeFileSync(filePath, vcfContent);
-
-    await sendEmailsToUsers(filePath, contacts.map((c) => c.email));
-    console.log("VCF file generated and emails sent!");
-
-    // Optionally, clear database after sending
-    // await Contact.deleteMany({});
+    await sendEmail(testEmail, testFilePath);
+    res.send(`Test email sent to ${testEmail}`);
   } catch (error) {
-    console.error("Error generating VCF:", error);
+    console.error("Email Error:", error);
+    res.status(500).send("Failed to send email.");
   }
-}, 3 * 24 * 60 * 60 * 1000); // Runs every 3 days
+});
 
 // Email Sending Function
-async function sendEmailsToUsers(filePath, emails) {
+async function sendEmail(toEmail, filePath) {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -85,14 +78,14 @@ async function sendEmailsToUsers(filePath, emails) {
 
   let mailOptions = {
     from: process.env.EMAIL_USERNAME,
-    to: emails.join(","),
-    subject: "Your Contact VCF File",
-    text: "Attached is your VCF file with all submitted contacts.",
-    attachments: [{ filename: "contacts.vcf", path: filePath }],
+    to: toEmail,
+    subject: "Test VCF Email",
+    text: "This is a test email with a sample VCF file.",
+    attachments: [{ filename: "test.vcf", path: filePath }],
   };
 
   await transporter.sendMail(mailOptions);
-  console.log("Emails sent successfully!");
+  console.log(`Test email sent to ${toEmail}`);
 }
 
 // Start Server
