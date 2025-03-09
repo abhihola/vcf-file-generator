@@ -1,17 +1,52 @@
 body {
+    background: url('https://files.catbox.moe/mdeuf8.jpeg') no-repeat center center fixed;
+    background-size: cover;
     font-family: Arial, sans-serif;
+    color: white;
     text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.7);
     padding: 20px;
+    margin: 100px auto;
+    width: 50%;
+    border-radius: 10px;
 }
 
-form {
-    display: inline-block;
-    text-align: left;
+h1 {
+    margin-bottom: 20px;
 }
 
-input, button {
+form input {
     display: block;
-    margin: 10px 0;
+    width: 80%;
     padding: 10px;
-    width: 200px;
+    margin: 10px auto;
+    border: none;
+    border-radius: 5px;
+}
+
+button, .download-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 10px;
+    background: #ff9900;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button:hover, .download-btn:hover {
+    background: #ff6600;
+}
+
+.footer {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #ddd;
 }
