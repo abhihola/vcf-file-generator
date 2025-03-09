@@ -1,6 +1,6 @@
-document.getElementById('contactForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
     const name = document.getElementById('name').value;
     const phone = document.getElementById('phone').value;
     const email = document.getElementById('email').value;
