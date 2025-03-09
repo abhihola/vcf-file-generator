@@ -1,0 +1,27 @@
+{
+  "name": "VCF File Generator",
+  "description": "A Node.js app that collects contacts, generates VCF files, and emails them every 3 days.",
+  "repository": "https://github.com/abhihola/vcf-file-generator",
+  "env": {
+    "MONGO_URI": {
+      "description": "MongoDB connection string",
+      "required": true
+    },
+    "EMAIL_USER": {
+      "description": "Email address to send VCF files",
+      "required": true
+    },
+    "EMAIL_PASS": {
+      "description": "Email password or app password",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "node server.js"
+  }
+}
