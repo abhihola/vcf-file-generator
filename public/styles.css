@@ -1,40 +1,52 @@
 body {
     font-family: Arial, sans-serif;
-    background-image: url('https://files.catbox.moe/mdeuf8.jpeg');
+    background: url('https://files.catbox.moe/mdeuf8.jpeg') no-repeat center center fixed;
     background-size: cover;
-    background-position: center;
-    text-align: center;
-    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
 }
 
 .container {
-    margin-top: 100px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 10px;
-    display: inline-block;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-input, button {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    width: 80%;
-    max-width: 300px;
+h1 {
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 button {
-    background: #28a745;
+    background: #007BFF;
     color: white;
     border: none;
+    padding: 10px;
     cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
 }
 
 button:hover {
-    background: #218838;
+    background: #0056b3;
 }
 
-.footer {
-    margin-top: 20px;
-    font-size: 14px;
+label {
+    font-weight: bold;
+}
+
+select, input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
