@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const nodemailer = require('nodemailer');
 const nodeCron = require('node-cron');
 const vcfGenerator = require('./vcf_generator');
-const emailService = require('./email_service');
 
 dotenv.config();
 const app = express();
@@ -21,39 +21,70 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
 
-// Define Contact Model
+// Contact Model
 const Contact = require('./models/contact');
+
+// Nodemailer setup
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Function to send VCF via email
+const sendEmail = async (to, attachmentPath) => {
+    try {
+        let mailOptions = {
+            from: process.env.EMAIL_USER,
+            to,
+            subject: 'Your WhatsApp VCF File',
+            text: `Thanks for using our service! This is the fastest way to gain WhatsApp contacts and boost your status views. 🚀 
+
+Support us by sharing the website link with others: 🔗 https://vcf-file-generator.onrender.com/ 
+
+Keep growing your network! 😊`,
+            attachments: [{ path: attachmentPath }]
+        };
+
+        let info = await transporter.sendMail(mailOptions);
+        console.log(`Email sent to ${to}:`, info.response);
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+};
 
 // Route to submit contact details
 app.post('/submit', async (req, res) => {
     try {
-        const { name, phone, email } = req.body;
-
-        // Check if the phone number already exists
+        let { name, phone, email, countryCode } = req.body;
+        
+        // Ensure the phone number doesn't already exist
         const existingContact = await Contact.findOne({ phone });
         if (existingContact) {
-            return res.status(400).json({ error: 'Phone number already exists in the database' });
+            return res.status(400).json({ error: 'This WhatsApp number is already registered.' });
         }
+
+        // Format phone number
+        phone = phone.startsWith('+') ? phone : `+${countryCode}${phone}`;
 
         const newContact = new Contact({ name, phone, email });
         await newContact.save();
 
-        console.log('New contact saved. Regenerating VCF file...');
-        await vcfGenerator.generateVCF(); // Regenerate VCF file immediately
-
-        // Schedule the first VCF file email to the new user (10 minutes delay)
+        // Generate VCF and send email after 1 minute
         setTimeout(async () => {
-            console.log(`Sending first VCF file to ${email}...`);
-            await emailService.sendVCF(email);
-        }, 10 * 60 * 1000); // 10 minutes delay
+            const vcfPath = await vcfGenerator.generateVCF();
+            await sendEmail(email, vcfPath);
+        }, 60000); // 1 minute delay
 
-        res.status(200).json({ message: 'Contact saved successfully' });
+        res.status(200).json({ message: 'Contact saved successfully. Your VCF file will be sent to your email soon.' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Serve the Home Page
+// Serve the Homepage
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
@@ -63,14 +94,14 @@ app.get('/home', (req, res) => {
     res.sendFile(__dirname + '/public/home.html');
 });
 
-// Schedule VCF generation & email sending **EVERY DAY at Midnight**
+// Send updated VCF to all users every midnight
 nodeCron.schedule('0 0 * * *', async () => {
-    console.log('Generating daily VCF file and sending emails to all users...');
-    await vcfGenerator.generateVCF();
+    console.log('Regenerating VCF file for all users...');
+    const vcfPath = await vcfGenerator.generateVCF();
 
-    const contacts = await Contact.find();
-    for (const contact of contacts) {
-        await emailService.sendVCF(contact.email);
+    const allUsers = await Contact.find({});
+    for (const user of allUsers) {
+        await sendEmail(user.email, vcfPath);
     }
 });
 
