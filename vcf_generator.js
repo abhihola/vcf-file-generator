@@ -8,7 +8,7 @@ const generateVCF = async () => {
         const contacts = await Contact.find();
         if (contacts.length === 0) {
             console.log('No contacts found.');
-            return;
+            return null;
         }
 
         let vcfData = '';
@@ -19,8 +19,10 @@ const generateVCF = async () => {
         const vcfPath = path.join(__dirname, 'public', 'contacts.vcf');
         fs.writeFileSync(vcfPath, vcfData);
         console.log('VCF file generated successfully.');
+        return vcfPath; // Return file path for email attachment
     } catch (err) {
         console.error('Error generating VCF file:', err);
+        return null;
     }
 };
 
