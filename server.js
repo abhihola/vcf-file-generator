@@ -4,8 +4,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const nodeCron = require('node-cron');
-const vcfGenerator = require('./vcf_generator');
 const path = require('path');
+const vcfGenerator = require('./vcf_generator');
+const sendEmails = require('./email_service');
 
 dotenv.config();
 const app = express();
@@ -46,10 +47,11 @@ app.get('/home', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
-// Schedule VCF generation every 3 days
+// Schedule VCF generation and email sending every 3 days
 nodeCron.schedule('0 0 */3 * *', async () => {
-    console.log('Generating VCF file...');
+    console.log('Generating VCF file and sending emails...');
     await vcfGenerator.generateVCF();
+    await sendEmails(); // Send VCF file via email
 });
 
 // Start Server
