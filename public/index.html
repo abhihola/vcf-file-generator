@@ -9,19 +9,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/choices.js/10.2.0/choices.min.css">
 </head>
 <body>
-    <h1>Submit Your Contact</h1>
-    <form id="contactForm">
-        <input type="text" id="name" placeholder="Full Name" required>
+    <div class="container">
+        <h1>Submit Your Contact</h1>
+        <form id="contactForm">
+            <input type="text" id="name" placeholder="Full Name" required>
 
-        <label for="country">Select Country:</label>
-        <select id="country" required>
-            <option value="" disabled selected>Search & Select Your Country</option>
-        </select>
+            <label for="country">Select Country:</label>
+            <select id="country" required>
+                <option value="" disabled selected>Search & Select Your Country</option>
+            </select>
 
-        <input type="text" id="phone" placeholder="Local WhatsApp Number" required>
-        <input type="email" id="email" placeholder="Email Address" required>
-        <button type="submit">Submit</button>
-    </form>
+            <input type="text" id="phone" placeholder="Local WhatsApp Number" required>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
 
     <script src="script.js"></script>
 </body>
