@@ -1,33 +1,43 @@
-const nodemailer = require("nodemailer");
-const AdminMessage = require("./models/adminMessage");
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
 
+// Email Transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
 });
 
-async function sendVCF(email) {
-  try {
-    const adminMessage = await AdminMessage.findOne();
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your VCF File",
-      text: `${adminMessage ? adminMessage.message : "Enjoy your VCF file!"}\n\nKeep growing your network! 😊`,
-      attachments: [{ path: "./contacts.vcf" }],
-    };
-    await transporter.sendMail(mailOptions);
-    console.log("VCF email sent to:", email);
-  } catch (error) {
-    console.error("Error sending VCF email:", error);
-  }
-}
+const sendVCFEmail = async (toEmail) => {
+    try {
+        const filePath = path.join(__dirname, 'public', 'contacts.vcf');
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: toEmail,
+            subject: 'Your WhatsApp Contacts VCF File 📂',
+            text: `Thanks for using our service! This is the fastest way to gain WhatsApp contacts and boost your status views. 🚀
+            
+Support us by sharing the website link with others: 🔗 https://vcf-file-generator.onrender.com/
 
-async function sendVCFToAll() {
-  // Logic to fetch all user emails and send the updated VCF file daily
-}
+Keep growing your network! 😊`,
+            attachments: [{ path: filePath }]
+        };
 
-module.exports = { sendVCF, sendVCFToAll };
+        await transporter.sendMail(mailOptions);
+        console.log(`VCF file sent to ${toEmail}`);
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+};
+
+const sendVCFToAll = async () => {
+    const users = await mongoose.model('Contact').find({});
+    users.forEach(user => sendVCFEmail(user.email));
+};
+
+module.exports = { sendVCFEmail, sendVCFToAll };
