@@ -1,41 +1,33 @@
-const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
-const Contact = require('./models/contact');
-
-dotenv.config();
+const nodemailer = require("nodemailer");
+const AdminMessage = require("./models/adminMessage");
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-// Function to send VCF file
-const sendVCF = async (to) => {
-    try {
-        let mailOptions = {
-            from: process.env.EMAIL_USER,
-            to,
-            subject: 'Your WhatsApp Contacts VCF File',
-            text: 'Thanks for using our service! This is the fastest way to gain WhatsApp contacts and boost your status views. 🚀\n\nSupport us by sharing the website link with others: 🔗 https://vcf-file-generator.onrender.com/\n\nKeep growing your network! 😊',
-            attachments: [{ path: 'public/contacts.vcf' }]
-        };
+async function sendVCF(email) {
+  try {
+    const adminMessage = await AdminMessage.findOne();
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your VCF File",
+      text: `${adminMessage ? adminMessage.message : "Enjoy your VCF file!"}\n\nKeep growing your network! 😊`,
+      attachments: [{ path: "./contacts.vcf" }],
+    };
+    await transporter.sendMail(mailOptions);
+    console.log("VCF email sent to:", email);
+  } catch (error) {
+    console.error("Error sending VCF email:", error);
+  }
+}
 
-        let info = await transporter.sendMail(mailOptions);
-        console.log(`VCF email sent to ${to}:`, info.response);
-    } catch (error) {
-        console.error('Error sending VCF email:', error);
-    }
-};
+async function sendVCFToAll() {
+  // Logic to fetch all user emails and send the updated VCF file daily
+}
 
-// Send VCF to all users
-const sendVCFToAllUsers = async () => {
-    const contacts = await Contact.find({});
-    for (const contact of contacts) {
-        await sendVCF(contact.email);
-    }
-};
-
-module.exports = { sendVCF, sendVCFToAllUsers };
+module.exports = { sendVCF, sendVCFToAll };
