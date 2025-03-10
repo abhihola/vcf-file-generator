@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const nodeCron = require('node-cron');
 const vcfGenerator = require('./vcf_generator');
 const emailService = require('./email_service');
+const authMiddleware = require('./middleware/auth');
 
 dotenv.config();
 const app = express();
@@ -21,35 +22,28 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
 
-// Define Contact Model
+// Models
 const Contact = require('./models/contact');
 
 // Route to submit contact details
 app.post('/submit', async (req, res) => {
     try {
-        let { name, phone, email, countryCode } = req.body;
+        const { name, phone, email } = req.body;
 
-        // Ensure phone number does not already exist
+        // Check if contact already exists
         const existingContact = await Contact.findOne({ phone });
         if (existingContact) {
-            return res.status(400).json({ message: 'Phone number already exists' });
+            return res.status(400).json({ error: 'This contact already exists' });
         }
 
-        // Remove country code if user enters it again
-        if (phone.startsWith(countryCode)) {
-            phone = phone.replace(countryCode, '');
-        }
-
-        const fullPhoneNumber = countryCode + phone;
-        const newContact = new Contact({ name, phone: fullPhoneNumber, email });
-
+        const newContact = new Contact({ name, phone, email });
         await newContact.save();
 
-        // Generate and send VCF after 1 minute
+        // Generate and send VCF file to the new user in 1 minute
         setTimeout(async () => {
             await vcfGenerator.generateVCF();
             await emailService.sendVCF(email);
-        }, 60000); // 1 minute delay
+        }, 60000);
 
         res.status(200).json({ message: 'Contact saved successfully' });
     } catch (err) {
@@ -62,15 +56,21 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+// Serve the VCF download page
 app.get('/home', (req, res) => {
     res.sendFile(__dirname + '/public/home.html');
 });
 
-// Schedule daily VCF generation at midnight
+// Serve the Admin Page (Protected)
+app.get('/admin', authMiddleware, (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html');
+});
+
+// Scheduled task: Send updated VCF to all users every day at midnight
 nodeCron.schedule('0 0 * * *', async () => {
-    console.log('Generating daily VCF file and sending to all users...');
+    console.log('Regenerating VCF file and sending to all users...');
     await vcfGenerator.generateVCF();
-    await emailService.sendToAllUsers();
+    await emailService.sendVCFToAllUsers();
 });
 
 // Start Server
