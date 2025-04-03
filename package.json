@@ -1,0 +1,23 @@
+{
+  "name": "vcf-generator",
+  "version": "1.0.0",
+  "description": "A web app for generating and sending VCF contact files.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^6.2.1",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "nodemailer": "^6.9.7",
+    "node-cron": "^3.0.2"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
