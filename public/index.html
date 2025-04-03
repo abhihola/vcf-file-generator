@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCF Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Submit Your Contact</h1>
+        <form id="contactForm">
+            <select id="country" required>
+                <option value="+234" selected>Nigeria (+234)</option>
+            </select>
+            <input type="text" id="name" placeholder="Full Name" required>
+            <input type="text" id="phone" placeholder="WhatsApp Number" required>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
