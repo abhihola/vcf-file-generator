@@ -7,6 +7,7 @@ const nodeCron = require('node-cron');
 const vcfGenerator = require('./vcf_generator');
 const emailService = require('./email_service');
 
+// Load environment variables
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +20,7 @@ app.use(express.static('public')); // Serve frontend files
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Define Contact Model
 const Contact = require('./models/contact');
@@ -47,12 +48,18 @@ app.post('/submit', async (req, res) => {
 
         // Generate and send VCF after 1 minute
         setTimeout(async () => {
-            await vcfGenerator.generateVCF();
-            await emailService.sendVCF(email);
+            try {
+                await vcfGenerator.generateVCF([newContact]); // Generate VCF for the new contact
+                await emailService.sendVCF(email); // Send VCF to the user's email
+                console.log(`VCF sent successfully to ${email}`);
+            } catch (err) {
+                console.error('Error generating or sending VCF:', err.message);
+            }
         }, 60000); // 1 minute delay
 
         res.status(200).json({ message: 'Contact saved successfully' });
     } catch (err) {
+        console.error('Error saving contact:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -66,11 +73,46 @@ app.get('/home', (req, res) => {
     res.sendFile(__dirname + '/public/home.html');
 });
 
-// Schedule daily VCF generation at 1:30 PM Nigeria time (12:30 PM UTC)
-nodeCron.schedule('30 12 * * *', async () => {
-    console.log('Generating daily VCF file and sending to all users...');
-    await vcfGenerator.generateVCF();
-    await emailService.sendToAllUsers();
+// Helper function to send emails in batches
+async function sendEmailsInBatches(emails, batchSize) {
+    for (let i = 0; i < emails.length; i += batchSize) {
+        const batch = emails.slice(i, i + batchSize);
+        console.log(`Sending batch of ${batch.length} emails...`);
+        try {
+            await emailService.sendToBatch(batch); // Send emails to this batch
+            console.log(`Batch of ${batch.length} emails sent successfully.`);
+        } catch (err) {
+            console.error('Error sending email batch:', err.message);
+        }
+    }
+}
+
+// Schedule daily VCF generation and email sending at 2:00 PM Nigeria time (1:00 PM UTC)
+nodeCron.schedule('00 13 * * *', async () => {
+    try {
+        console.log('Generating daily VCF file and sending to all users...');
+
+        // Step 1: Fetch all contacts from the database
+        const contacts = await Contact.find({});
+        if (!contacts || contacts.length === 0) {
+            console.log('No contacts found in the database.');
+            return;
+        }
+
+        // Step 2: Generate VCF file with all contacts
+        await vcfGenerator.generateVCFWithContacts(contacts);
+
+        // Step 3: Extract all unique email addresses
+        const emails = [...new Set(contacts.map(contact => contact.email))];
+
+        // Step 4: Send emails in batches (e.g., 100 emails per batch)
+        const batchSize = 100;
+        await sendEmailsInBatches(emails, batchSize);
+
+        console.log('Daily VCF generation and email sending completed successfully.');
+    } catch (err) {
+        console.error('Error during daily VCF generation and email sending:', err.message);
+    }
 });
 
 // Start Server
