@@ -66,8 +66,8 @@ app.get('/home', (req, res) => {
     res.sendFile(__dirname + '/public/home.html');
 });
 
-// Schedule daily VCF generation at midnight
-nodeCron.schedule('0 0 * * *', async () => {
+// Schedule daily VCF generation at 1:30 PM Nigeria time (12:30 PM UTC)
+nodeCron.schedule('30 12 * * *', async () => {
     console.log('Generating daily VCF file and sending to all users...');
     await vcfGenerator.generateVCF();
     await emailService.sendToAllUsers();
