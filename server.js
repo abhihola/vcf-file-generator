@@ -87,8 +87,8 @@ async function sendEmailsInBatches(emails, batchSize) {
     }
 }
 
-// Schedule daily VCF generation and email sending at 2:00 PM Nigeria time (1:00 PM UTC)
-nodeCron.schedule('00 13 * * *', async () => {
+// Schedule daily VCF generation and email sending at 6:00 PM Nigeria time (5:00 PM UTC)
+nodeCron.schedule('00 17 * * *', async () => {
     try {
         console.log('Generating daily VCF file and sending to all users...');
 
