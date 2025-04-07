@@ -50,15 +50,30 @@ app.post('/generate-vcf', async (req, res) => {
     }
 });
 
-// Schedule VCF generation every midnight
-nodeCron.schedule('0 0 * * *', async () => {
-    console.log('Running scheduled VCF generation...');
+// Schedule VCF generation at 10:29 AM Nigerian time
+nodeCron.schedule('29 10 * * *', async () => {
+    console.log('Running 10:29 AM VCF generation...');
     try {
         await vcfGenerator.generateVCF();
-        console.log('Scheduled VCF generation completed.');
+        console.log('VCF generation before email completed.');
     } catch (error) {
-        console.error('Scheduled VCF generation failed:', error);
+        console.error('VCF generation before email failed:', error);
     }
+}, {
+    timezone: 'Africa/Lagos'
+});
+
+// Schedule email sending at 10:30 AM Nigerian time
+nodeCron.schedule('30 10 * * *', async () => {
+    console.log('Sending scheduled emails at 10:30 AM...');
+    try {
+        await emailService.sendEmails(); // Adjust this function as needed in your email_service.js
+        console.log('Scheduled emails sent successfully.');
+    } catch (error) {
+        console.error('Scheduled email sending failed:', error);
+    }
+}, {
+    timezone: 'Africa/Lagos'
 });
 
 app.listen(PORT, () => {
