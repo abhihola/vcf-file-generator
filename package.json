@@ -18,7 +18,8 @@
     "nodemailer": "^6.9.7",
     "node-cron": "^3.0.2",
     "nodemon": "^2.0.22",
-    "express-rate-limit": "^5.5.1"
+    "express-rate-limit": "^5.5.1",
+    "morgan": "^1.10.0"  // Added morgan
   },
   "engines": {
     "node": "22.x"
