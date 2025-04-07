@@ -16,13 +16,13 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // Serve static files
-app.use(morgan('dev')); // Log HTTP requests
+app.use(express.static('public'));
+app.use(morgan('dev'));
 
-// Rate limiting to prevent abuse
+// Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: "Too many requests, please try again later."
 });
 app.use(limiter);
@@ -50,9 +50,9 @@ app.post('/generate-vcf', async (req, res) => {
     }
 });
 
-// Schedule VCF generation at 11:29 AM Nigerian time (1 minute before 11:30 AM)
-nodeCron.schedule('29 11 * * *', async () => {
-    console.log('Running 11:29 AM VCF generation...');
+// Schedule VCF generation at 2:29 PM Nigerian time
+nodeCron.schedule('29 14 * * *', async () => {
+    console.log(`[${new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })}] Running 2:29 PM VCF generation...`);
     try {
         await vcfGenerator.generateVCF();
         console.log('VCF generation completed before email sending.');
@@ -63,11 +63,11 @@ nodeCron.schedule('29 11 * * *', async () => {
     timezone: 'Africa/Lagos'
 });
 
-// Schedule email sending at 11:30 AM Nigerian time
-nodeCron.schedule('30 11 * * *', async () => {
-    console.log('Sending scheduled emails at 11:30 AM...');
+// Schedule email sending at 2:30 PM Nigerian time
+nodeCron.schedule('30 14 * * *', async () => {
+    console.log(`[${new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })}] Sending scheduled emails at 2:30 PM...`);
     try {
-        await emailService.sendEmails(); // Adjust this function as needed in your email_service.js
+        await emailService.sendToAllUsers();
         console.log('Scheduled emails sent successfully.');
     } catch (error) {
         console.error('Scheduled email sending failed:', error);
