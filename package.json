@@ -17,8 +17,7 @@
     "body-parser": "^1.20.2",
     "nodemailer": "^6.9.7",
     "node-cron": "^3.0.2",
-    "fs": "0.0.1", 
-    "nodemon": "^2.0.22" 
+    "nodemon": "^2.0.22"  // Added nodemon for development use
   },
   "engines": {
     "node": "22.x"
