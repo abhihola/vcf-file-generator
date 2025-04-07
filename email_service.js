@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 const fs = require('fs');
-const Contact = require('./models/contact');
+const Contact = require('./models/contact');  // Assuming you have a Contact model for your emails
 
 dotenv.config();
 
@@ -21,6 +21,7 @@ const saveProgress = (batch) => {
     fs.writeFileSync('./progress.json', JSON.stringify(progress));
 };
 
+// Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -29,6 +30,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Send email with VCF attachment
 const sendVCF = async (to) => {
     try {
         let mailOptions = {
@@ -46,36 +48,41 @@ const sendVCF = async (to) => {
     }
 };
 
+// Send emails to all users in batches
 const sendToAllUsers = async () => {
-    const contacts = await Contact.find({});
-    const batchSize = 100;  // Send 100 emails per batch
-    let batch = [];
-    const progress = getProgress();  // Get last processed batch from progress file
+    try {
+        const contacts = await Contact.find({});
+        const batchSize = 100;  // Send 100 emails per batch
+        let batch = [];
+        const progress = getProgress();  // Get last processed batch from progress file
 
-    // Start from the batch after the last processed batch
-    let startIndex = progress.lastProcessedBatch * batchSize;
+        // Start from the batch after the last processed batch
+        let startIndex = progress.lastProcessedBatch * batchSize;
 
-    for (let i = startIndex; i < contacts.length; i++) {
-        batch.push(contacts[i].email);
+        for (let i = startIndex; i < contacts.length; i++) {
+            batch.push(contacts[i].email);
 
-        // When the batch is full, send it and save progress
-        if (batch.length === batchSize || i === contacts.length - 1) {
-            console.log(`Sending batch ${Math.floor(i / batchSize) + 1}...`);
-            for (const email of batch) {
-                await sendVCF(email);
+            // When the batch is full, send it and save progress
+            if (batch.length === batchSize || i === contacts.length - 1) {
+                console.log(`Sending batch ${Math.floor(i / batchSize) + 1}...`);
+                for (const email of batch) {
+                    await sendVCF(email);
+                }
+
+                // Save the progress after each batch is sent
+                saveProgress(Math.floor(i / batchSize) + 1);
+
+                // Wait for 1 hour before sending the next batch
+                console.log(`Waiting for 1 hour before sending the next batch...`);
+                await new Promise(resolve => setTimeout(resolve, 60 * 60 * 1000));  // Wait for 1 hour
+
+                batch = [];  // Clear the batch for the next set of emails
             }
-
-            // Save the progress after each batch is sent
-            saveProgress(Math.floor(i / batchSize) + 1);
-
-            // Wait for 1 hour before sending the next batch
-            console.log(`Waiting for 1 hour before sending the next batch...`);
-            await new Promise(resolve => setTimeout(resolve, 60 * 60 * 1000));  // Wait for 1 hour
-
-            batch = [];  // Clear the batch for the next set of emails
         }
+        console.log("All emails sent!");
+    } catch (error) {
+        console.error("Error sending emails:", error);
     }
-    console.log("All emails sent!");
 };
 
 module.exports = { sendVCF, sendToAllUsers };
